@@ -122,8 +122,8 @@ SimpleRenderer::Impl::Impl(
     program_(shaders_), 
     vbo_(VERTICIES, GL_STATIC_DRAW), 
     ebo_(INDICIES, GL_STATIC_DRAW), 
-    textureIn_(GL_SRGB8, width_, height_),  //
-    textureOut_(GL_SRGB8, width_, height_), //Assuming sRGB input and output
+    textureIn_(GL_SRGB8_ALPHA8, width_, height_),  //
+    textureOut_(GL_SRGB8_ALPHA8, width_, height_), //Assuming sRGB input and output
     sampler_(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE),
     fbo_(textureOut_)
 {
@@ -139,30 +139,31 @@ SimpleRenderer::Impl::Impl(
 
 void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src)
 {
-    if (width_ != dest.cols || height_ != dest.rows || CV_8UC3 != dest.type())
+    if (width_ != dest.cols || height_ != dest.rows || CV_8UC4 != dest.type())
     {
         ROS_ERROR_STREAM(
             "Destination image resolution does not match." << 
             "width:     texture=" << width_  << ", input=" << dest.cols << 
             "height:    texture=" << height_ << ", input=" << dest.rows << 
-            "channel:   texture=" << 3       << ", input=" << dest.channels() << 
+            "channel:   texture=" << 4       << ", input=" << dest.channels() << 
             "elemSize1: texture=" << 1       << ", input=" << dest.elemSize1());
         return;
     }
 
-    if (width_ != src.cols || height_ != src.rows || CV_8UC3 != dest.type())
+    if (width_ != src.cols || height_ != src.rows || CV_8UC4 != dest.type())
     {
         ROS_ERROR_STREAM(
             "Source image resolution does not match." << 
             "width:     texture=" << width_  << ", input=" << src.cols << 
             "height:    texture=" << height_ << ", input=" << src.rows << 
-            "channel:   texture=" << 3       << ", input=" << src.channels() << 
+            "channel:   texture=" << 4       << ", input=" << src.channels() << 
             "elemSize1: texture=" << 1       << ", input=" << src.elemSize1());
         return;
     }
 
+    ROS_ERROR_STREAM( src.channels() << std::endl << dest.channels() << std::endl << std::endl);
     //Perform rendering
-    textureIn_.write(GL_BGR, GL_UNSIGNED_BYTE, src.data);
+    textureIn_.write(GL_BGRA, GL_UNSIGNED_BYTE, src.data);
     textureIn_.bindToUnit(0);
     sampler_.bindToUnit(0);
 
@@ -175,7 +176,7 @@ void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src)
     glFinish();
 
     //Read result
-    textureOut_.read(GL_BGR, GL_UNSIGNED_BYTE, dest.data, dest.rows * dest.cols * dest.channels());
+    textureOut_.read(GL_BGRA, GL_UNSIGNED_BYTE, dest.data, dest.rows * dest.cols * dest.channels());
 }
 
 SimpleRenderer::SimpleRenderer(
