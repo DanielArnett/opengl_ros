@@ -161,7 +161,6 @@ void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src)
         return;
     }
 
-    ROS_ERROR_STREAM( src.channels() << std::endl << dest.channels() << std::endl << std::endl);
     //Perform rendering
     textureIn_.write(GL_BGRA, GL_UNSIGNED_BYTE, src.data);
     textureIn_.bindToUnit(0);
