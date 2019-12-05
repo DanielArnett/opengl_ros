@@ -52,6 +52,7 @@ struct SimpleRenderer::Impl
         const std::string& fragmentShader);
 
     void render(cv::Mat& dest, const cv::Mat& src);
+    void AddTexture(const std::string& name, const cv::Mat& src, int layer);
 };
 
 constexpr std::array<Vertex, 4> SimpleRenderer::Impl::VERTICIES;
@@ -108,6 +109,11 @@ SimpleRenderer::Impl::Egl::Egl() :
         }
     }, nullptr);
     glEnable(GL_DEBUG_OUTPUT);
+}
+
+void SimpleRenderer::Impl::AddTexture(const std::string& name, const cv::Mat& src, int layer) {
+    textureIn_.write(GL_BGRA, GL_UNSIGNED_BYTE, src.data);
+    textureIn_.bindToUnit(layer);
 }
 
 SimpleRenderer::Impl::Impl(
@@ -198,7 +204,6 @@ catch (cgs::gl::Exception& e)
 }
 
 SimpleRenderer::~SimpleRenderer() = default;
-
 void SimpleRenderer::uniform(const std::string& name, float v1) { 
     glUniform1f(glGetUniformLocation(impl_->program_.get(), name.c_str()), v1);
 }
@@ -236,6 +241,10 @@ void SimpleRenderer::uniform(const std::string& name, unsigned int v1, unsigned 
     glUniform4ui(glGetUniformLocation(impl_->program_.get(), name.c_str()), v1, v2, v3, v4);
 }
 
+void SimpleRenderer::AddTexture(const std::string& name, const cv::Mat& src, int layer)
+{
+    impl_->AddTexture(name, src, layer);
+}
 void SimpleRenderer::render(cv::Mat& dest, const cv::Mat& src)
 {
     impl_->render(dest, src);

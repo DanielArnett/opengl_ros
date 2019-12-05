@@ -137,6 +137,7 @@ include_directories(
 add_executable(simple_renderer src/simple_renderer_node.cpp src/simple_renderer_nodecore.cpp)
 add_executable(make_half_transparent src/make_half_transparent_node.cpp src/make_half_transparent_nodecore.cpp)
 add_executable(check_transparency src/check_transparency_node.cpp src/check_transparency_nodecore.cpp)
+add_executable(blend_images src/blend_images_node.cpp src/blend_images_nodecore.cpp)
 add_executable(color_extraction_cpu src/color_extraction_cpu_node.cpp src/color_extraction_cpu_nodecore.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -153,6 +154,10 @@ target_link_libraries(make_half_transparent
   ${opengl_ros_lib_LIBRARIES}
 )
 target_link_libraries(check_transparency
+  ${catkin_LIBRARIES}
+  ${opengl_ros_lib_LIBRARIES}
+)
+target_link_libraries(blend_images
   ${catkin_LIBRARIES}
   ${opengl_ros_lib_LIBRARIES}
 )

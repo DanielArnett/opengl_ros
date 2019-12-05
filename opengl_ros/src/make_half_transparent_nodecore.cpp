@@ -25,6 +25,12 @@ SimpleRendererNode::SimpleRendererNode(const ros::NodeHandle& nh, const ros::Nod
         vertexShader, fragmentShader
     );
 
+    float x, y;
+    nh_.param<float>("x"  , y  , 0);
+    nh_.param<float>("y"   , x   , 0);
+    renderer_->uniform("x"  , x);
+    renderer_->uniform("y"  , y);
+    
     output_.create(height, width, CV_8UC4);
     cv::Mat image;
     image.create(height, width, CV_8UC4);

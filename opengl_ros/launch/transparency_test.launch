@@ -23,28 +23,64 @@
     <param name="height"          value="$(arg height)"/>
     <param name="vertex_shader"   value="$(find opengl_ros_lib)/shader/vs_passthrough.glsl"/>
     <param name="fragment_shader" value="$(find opengl_ros)/shader/make_half_transparent.glsl"/>
+    <param name="x"    value="0.3"/>
+    <param name="y"    value="0.3"/>
 
-    <remap from="image_out" to="/half_transparent"/>
+    <remap from="image_out" to="/image_in"/>
   </node>
 
-  <node pkg="opengl_ros" type="check_transparency"
+  <node pkg="opengl_ros" type="make_half_transparent"
+    name="second_circle" output="screen">
+    <param name="width"           value="$(arg width)"/>
+    <param name="height"          value="$(arg height)"/>
+    <param name="vertex_shader"   value="$(find opengl_ros_lib)/shader/vs_passthrough.glsl"/>
+    <param name="fragment_shader" value="$(find opengl_ros)/shader/make_half_transparent.glsl"/>
+    <param name="x"    value="0.7"/>
+    <param name="y"    value="0.7"/>
+
+    <remap from="image_out" to="/second_image_in"/>
+  </node>
+
+  <node pkg="opengl_ros" type="blend_images"
+    name="blended_image" output="screen">
+    <param name="width"           value="$(arg width)"/>
+    <param name="height"          value="$(arg height)"/>
+    <param name="vertex_shader"   value="$(find opengl_ros_lib)/shader/vs_passthrough.glsl"/>
+    <param name="fragment_shader" value="$(find opengl_ros)/shader/blend_images.glsl"/>
+
+    <remap from="/first_image" to="/image_in"/>
+    <remap from="/second_image" to="/second_image_in"/>
+    <remap from="image_out" to="/blended_image"/>
+  </node>
+
+  <!--node pkg="opengl_ros" type="check_transparency"
     name="check_transparency" output="screen">
     <param name="width"           value="$(arg width)"/>
     <param name="height"          value="$(arg height)"/>
     <param name="vertex_shader"   value="$(find opengl_ros_lib)/shader/vs_passthrough.glsl"/>
     <param name="fragment_shader" value="$(find opengl_ros)/shader/check_transparency.glsl"/>
 
-    <remap from="image_in"  to="/half_transparent"/>
+    <remap from="image_in"  to="first_image"/>
     <remap from="image_out" to="/transparency_check"/>
-  </node>
+  </node-->
 
   <node pkg="image_view" type="image_view" name="viewer_out">
-    <remap from="image" to="/half_transparent"/>
-    <param name="window_name" value="Half Transparent Output"/>
+    <remap from="image" to="/image_in"/>
+    <param name="window_name" value="First Output"/>
   </node>
 
-  <node pkg="image_view" type="image_view" name="view_transparency_check">
+  <node pkg="image_view" type="image_view" name="second_circle_viewer">
+    <remap from="image" to="/second_image_in"/>
+    <param name="window_name" value="Second Output"/>
+  </node>
+
+  <node pkg="image_view" type="image_view" name="blended_viewer">
+    <remap from="image" to="/blended_image"/>
+    <param name="window_name" value="Blended Output"/>
+  </node>
+
+  <!--node pkg="image_view" type="image_view" name="view_transparency_check">
     <remap from="image" to="/transparency_check"/>
     <param name="window_name" value="Transparency Check"/>
-  </node>
+  </node-->
 </launch>
