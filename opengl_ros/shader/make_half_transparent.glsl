@@ -11,11 +11,18 @@ void main(void)
     float v = gl_FragCoord.y / resolution.y;
     vec3 black = vec3(0.0, 0.0, 0.0);
     vec3 red = vec3(1.0, 0.0, 0.0);
-    
-    if (distance(vec2(u,v), vec2(x,y)) < 0.2) {
-        fragColor = vec4(red, 1.0);
+    vec3 green = vec3(0.0, 1.0, 0.0);
+    vec3 color = green;
+    if (x < 0.5) {
+        color = red;
     }
-    else {
-        fragColor = vec4(black, 0.0);
-    }
+    float intensity = 1.0 - distance(vec2(u,v), vec2(x,y));
+    //color *= intensity;
+    fragColor = vec4(color, intensity);
+    //if (distance(vec2(u,v), vec2(x,y)) < 0.2) {
+    //    fragColor = vec4(red, 1.0);
+    //}
+    //else {
+    //    fragColor = vec4(black, 0.0);
+    //}
 }

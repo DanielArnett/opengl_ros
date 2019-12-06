@@ -23,8 +23,8 @@
     <param name="height"          value="$(arg height)"/>
     <param name="vertex_shader"   value="$(find opengl_ros_lib)/shader/vs_passthrough.glsl"/>
     <param name="fragment_shader" value="$(find opengl_ros)/shader/make_half_transparent.glsl"/>
-    <param name="x"    value="0.3"/>
-    <param name="y"    value="0.3"/>
+    <param name="x"    value="0.25"/>
+    <param name="y"    value="0.25"/>
 
     <remap from="image_out" to="/image_in"/>
   </node>
@@ -35,8 +35,8 @@
     <param name="height"          value="$(arg height)"/>
     <param name="vertex_shader"   value="$(find opengl_ros_lib)/shader/vs_passthrough.glsl"/>
     <param name="fragment_shader" value="$(find opengl_ros)/shader/make_half_transparent.glsl"/>
-    <param name="x"    value="0.7"/>
-    <param name="y"    value="0.7"/>
+    <param name="x"    value="0.75"/>
+    <param name="y"    value="0.75"/>
 
     <remap from="image_out" to="/second_image_in"/>
   </node>
