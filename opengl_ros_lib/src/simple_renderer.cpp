@@ -37,6 +37,10 @@ struct SimpleRenderer::Impl
 
     Egl egl_;
     const int width_, height_;
+    int channels_ = 3;
+    unsigned int glFormat_ = GL_BGR;
+    unsigned int cvMatType_  = CV_8UC3;
+    bool formatSet_;
 
     std::array<cgs::gl::Shader, 2> shaders_;
     cgs::gl::Program program_;
@@ -50,9 +54,9 @@ struct SimpleRenderer::Impl
     Impl(int width, int height, 
         const std::string& vertexShader, 
         const std::string& fragmentShader);
-
+    void checkFormat(const cv::Mat& src);
+    void render(cv::Mat& dest, const cv::Mat& src);
     void render(cv::Mat& dest, const cv::Mat& src, const cv::Mat& secondSrc);
-    void AddTexture(const std::string& name, const cv::Mat& src, int layer);
 };
 
 constexpr std::array<Vertex, 4> SimpleRenderer::Impl::VERTICIES;
@@ -111,16 +115,10 @@ SimpleRenderer::Impl::Egl::Egl() :
     glEnable(GL_DEBUG_OUTPUT);
 }
 
-void SimpleRenderer::Impl::AddTexture(const std::string& name, const cv::Mat& src, int layer) {
-    
-//    secondTexture_.write(GL_BGRA, GL_UNSIGNED_BYTE, src.data);
-//    secondTexture_.bindToUnit(layer);
-}
-
 SimpleRenderer::Impl::Impl(
     int width, int height, 
     const std::string& vertexShader, 
-    const std::string& fragmentShader) : 
+    const std::string& fragmentShader) :
     width_(width), height_(height), 
     shaders_({
         cgs::gl::Shader(GL_VERTEX_SHADER,   vertexShader),
@@ -145,45 +143,37 @@ SimpleRenderer::Impl::Impl(
     vao_.mapVariable(vbo_, glGetAttribLocation(program_.get(), "position"), 3, GL_FLOAT, 0);
     vao_.mapVariable(ebo_);
 }
-
-void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src, const cv::Mat& secondSrc)
+void SimpleRenderer::Impl::checkFormat(const cv::Mat& src)
 {
-    cv::Mat left = src.clone();
-    cv::Mat right = secondSrc.clone();
-    if (width_ != dest.cols || height_ != dest.rows || CV_8UC4 != dest.type())
+    if (!formatSet_) {
+        if (src.channels() == 4)
+        {
+            channels_ = 4;
+            glFormat_ = GL_BGRA;
+            cvMatType_  = CV_8UC4;
+        }
+        formatSet_ = true;
+    }
+    if (width_ != src.cols || height_ != src.rows || cvMatType_ != src.type())
     {
         ROS_ERROR_STREAM(
-            "Destination image resolution does not match." << 
-            "width:     texture=" << width_  << ", input=" << dest.cols << 
-            "height:    texture=" << height_ << ", input=" << dest.rows << 
-            "channel:   texture=" << 4       << ", input=" << dest.channels() << 
-            "elemSize1: texture=" << 1       << ", input=" << dest.elemSize1());
+                "Image resolution does not match." <<
+                      "width:     texture=" << width_  << ", input=" << src.cols <<
+                      "height:    texture=" << height_ << ", input=" << src.rows <<
+                      "channel:   texture=" << channels_<< ", input=" << src.channels() <<
+                      "elemSize1: texture=" << 1       << ", input=" << src.elemSize1());
         return;
     }
-
-    if (width_ != src.cols || height_ != src.rows || CV_8UC4 != dest.type())
-    {
-        ROS_ERROR_STREAM(
-            "Source image resolution does not match." << 
-            "width:     texture=" << width_  << ", input=" << src.cols << 
-            "height:    texture=" << height_ << ", input=" << src.rows << 
-            "channel:   texture=" << 4       << ", input=" << src.channels() << 
-            "elemSize1: texture=" << 1       << ", input=" << src.elemSize1());
-        return;
-    }
-
+}
+void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src)
+{
+    checkFormat(src);
+    checkFormat(dest);
     //Perform rendering
-//    glActiveTexture(GL_TEXTURE0);
-    textureIn_.write(GL_BGRA, GL_UNSIGNED_BYTE, left.data);
+    textureIn_.write(glFormat_, GL_UNSIGNED_BYTE, src.data);
     textureIn_.bindToUnit(0);
     sampler_.bindToUnit(0);
 
-//    glActiveTexture(GL_TEXTURE1);
-    secondTexture_.write(GL_BGRA, GL_UNSIGNED_BYTE, right.data);
-    secondTexture_.bindToUnit(1);
-    sampler_.bindToUnit(1);
-
-//    glActiveTexture(GL_TEXTURE0);
     fbo_.bind();
     glViewport(0, 0, width_, height_);
 
@@ -193,7 +183,16 @@ void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src, const cv::M
     glFinish();
 
     //Read result
-    textureOut_.read(GL_BGRA, GL_UNSIGNED_BYTE, dest.data, dest.rows * dest.cols * dest.channels());
+    textureOut_.read(glFormat_, GL_UNSIGNED_BYTE, dest.data, dest.rows * dest.cols * dest.channels());
+}
+
+void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src, const cv::Mat& secondSrc)
+{
+    checkFormat(secondSrc);
+    secondTexture_.write(glFormat_, GL_UNSIGNED_BYTE, secondSrc.data);
+    secondTexture_.bindToUnit(1);
+    sampler_.bindToUnit(1);
+    this->render(dest, src);
 }
 
 SimpleRenderer::SimpleRenderer(
@@ -253,10 +252,6 @@ void SimpleRenderer::uniform(const std::string& name, unsigned int v1, unsigned 
     glUniform4ui(glGetUniformLocation(impl_->program_.get(), name.c_str()), v1, v2, v3, v4);
 }
 
-void SimpleRenderer::AddTexture(const std::string& name, const cv::Mat& src, int layer)
-{
-    impl_->AddTexture(name, src, layer);
-}
 void SimpleRenderer::render(cv::Mat& dest, const cv::Mat& src, const cv::Mat& secondSrc)
 {
     impl_->render(dest, src, secondSrc);
@@ -264,5 +259,5 @@ void SimpleRenderer::render(cv::Mat& dest, const cv::Mat& src, const cv::Mat& se
 
 void SimpleRenderer::render(cv::Mat& dest, const cv::Mat& src)
 {
-    impl_->render(dest, src, src);
+    impl_->render(dest, src);
 }

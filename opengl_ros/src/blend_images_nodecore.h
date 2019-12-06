@@ -29,6 +29,7 @@ class SimpleRendererNode
     cv::Mat output_;
     cv::Mat secondImage_;
     std::mutex imageMutex_;
+    bool secondImageReceived_ = false;
 
     void imageCallback(const sensor_msgs::Image::ConstPtr& msg);
     void imageSecondCallback(const sensor_msgs::Image::ConstPtr& msg);

@@ -31,7 +31,6 @@ public:
 
     void render(cv::Mat& dest, const cv::Mat& src);
     void render(cv::Mat& dest, const cv::Mat& src, const cv::Mat& secondSrc);
-    void AddTexture(const std::string& name, const cv::Mat& src, int layer);
 
     SimpleRenderer(const SimpleRenderer&) = delete;
     SimpleRenderer& operator=(const SimpleRenderer&) = delete;

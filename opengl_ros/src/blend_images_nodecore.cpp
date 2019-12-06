@@ -32,38 +32,41 @@ SimpleRendererNode::SimpleRendererNode(const ros::NodeHandle& nh, const ros::Nod
 
 void SimpleRendererNode::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 {
-    cv_bridge::CvImageConstPtr cv_ptr;
-    try
-    {
-        cv_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGRA8);
-    }
-    catch (cv_bridge::Exception& e)
-    {
-        ROS_ERROR_STREAM("cv_bridge exception: " << e.what());
-        return;
-    }
+    if (secondImageReceived_) {
+        cv_bridge::CvImageConstPtr cv_ptr;
+        try {
+            cv_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGRA8);
+        }
+        catch (cv_bridge::Exception &e) {
+            ROS_ERROR_STREAM("cv_bridge exception: " << e.what());
+            return;
+        }
 
-    auto start = std::chrono::system_clock::now();
-//     TODO add a second texture
-//    renderer_->AddTexture("secondImage", secondImage_, 1);
-    const auto& image = cv_ptr->image;
-    imageMutex_.lock();
-    renderer_->render(output_, image, secondImage_);
-    imageMutex_.unlock();
+        auto start = std::chrono::system_clock::now();
+        //     TODO add a second texture
+        //    renderer_->AddTexture("secondImage", secondImage_, 1);
+        const auto &image = cv_ptr->image;
+        imageMutex_.lock();
+        cv::Mat secondImage = secondImage_.clone();
+        renderer_->render(output_, image, secondImage);
+        imageMutex_.unlock();
 
-    ROS_DEBUG_STREAM(
-        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count() << "ns";
-    );
-    //Publish
-    cv_bridge::CvImage outImage;
-    outImage.header = cv_ptr->header;
-    outImage.encoding = cv_ptr->encoding;
-    outImage.image = output_;
-    imagePublisher_.publish(outImage.toImageMsg());
+        ROS_DEBUG_STREAM(
+                std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count()
+                        << "ns";
+        );
+        //Publish
+        cv_bridge::CvImage outImage;
+        outImage.header = cv_ptr->header;
+        outImage.encoding = cv_ptr->encoding;
+        outImage.image = output_;
+        imagePublisher_.publish(outImage.toImageMsg());
+    }
 }
 
 void SimpleRendererNode::imageSecondCallback(const sensor_msgs::Image::ConstPtr& msg)
 {
+
     imageMutex_.lock();
     cv_bridge::CvImageConstPtr cv_ptr;
     try
@@ -76,6 +79,7 @@ void SimpleRendererNode::imageSecondCallback(const sensor_msgs::Image::ConstPtr&
         return;
     }
     secondImage_ = cv_ptr->image;
+    secondImageReceived_ = true;
     imageMutex_.unlock();
 }
 void SimpleRendererNode::run()
