@@ -43,7 +43,7 @@ struct SimpleRenderer::Impl
     cgs::gl::VertexBuffer<Vertex> vbo_;
     cgs::gl::ElementBuffer<uint> ebo_;
     cgs::gl::VertexArray vao_;
-    cgs::gl::Texture2D textureIn_, textureOut_;
+    cgs::gl::Texture2D textureIn_, textureOut_, secondTexture_;
     cgs::gl::Sampler sampler_;
     cgs::gl::FrameBuffer fbo_;
 
@@ -51,7 +51,7 @@ struct SimpleRenderer::Impl
         const std::string& vertexShader, 
         const std::string& fragmentShader);
 
-    void render(cv::Mat& dest, const cv::Mat& src);
+    void render(cv::Mat& dest, const cv::Mat& src, const cv::Mat& secondSrc);
     void AddTexture(const std::string& name, const cv::Mat& src, int layer);
 };
 
@@ -112,8 +112,9 @@ SimpleRenderer::Impl::Egl::Egl() :
 }
 
 void SimpleRenderer::Impl::AddTexture(const std::string& name, const cv::Mat& src, int layer) {
-    textureIn_.write(GL_BGRA, GL_UNSIGNED_BYTE, src.data);
-    textureIn_.bindToUnit(layer);
+    
+//    secondTexture_.write(GL_BGRA, GL_UNSIGNED_BYTE, src.data);
+//    secondTexture_.bindToUnit(layer);
 }
 
 SimpleRenderer::Impl::Impl(
@@ -130,6 +131,7 @@ SimpleRenderer::Impl::Impl(
     ebo_(INDICIES, GL_STATIC_DRAW), 
     textureIn_(GL_SRGB8_ALPHA8, width_, height_),  //
     textureOut_(GL_SRGB8_ALPHA8, width_, height_), //Assuming sRGB input and output
+    secondTexture_(GL_SRGB8_ALPHA8, width_, height_),
     sampler_(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE),
     fbo_(textureOut_)
 {
@@ -137,13 +139,14 @@ SimpleRenderer::Impl::Impl(
     program_.use();
     glUniform2f(glGetUniformLocation(program_.get(), "resolution"), width_, height_);
     glUniform1i(glGetUniformLocation(program_.get(), "texture"), 0);
+    glUniform1i(glGetUniformLocation(program_.get(), "secondTexture"), 1);
 
     //Verticies setup
     vao_.mapVariable(vbo_, glGetAttribLocation(program_.get(), "position"), 3, GL_FLOAT, 0);
     vao_.mapVariable(ebo_);
 }
 
-void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src)
+void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src, const cv::Mat& secondSrc)
 {
     if (width_ != dest.cols || height_ != dest.rows || CV_8UC4 != dest.type())
     {
@@ -171,6 +174,10 @@ void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src)
     textureIn_.write(GL_BGRA, GL_UNSIGNED_BYTE, src.data);
     textureIn_.bindToUnit(0);
     sampler_.bindToUnit(0);
+
+    secondTexture_.write(GL_BGRA, GL_UNSIGNED_BYTE, secondSrc.data);
+    secondTexture_.bindToUnit(1);
+    sampler_.bindToUnit(1);
 
     fbo_.bind();
     glViewport(0, 0, width_, height_);
@@ -245,7 +252,7 @@ void SimpleRenderer::AddTexture(const std::string& name, const cv::Mat& src, int
 {
     impl_->AddTexture(name, src, layer);
 }
-void SimpleRenderer::render(cv::Mat& dest, const cv::Mat& src)
+void SimpleRenderer::render(cv::Mat& dest, const cv::Mat& src, const cv::Mat& secondSrc)
 {
-    impl_->render(dest, src);
+    impl_->render(dest, src, secondSrc);
 }

@@ -13,6 +13,8 @@ void main(void)
     vec3 green = vec3(0.0, 1.0, 0.0);
     vec4 inputPixel = texture2D(texture, vec2(u,v));
     fragColor = inputPixel + texture2D(secondTexture, vec2(u,v));
+//    fragColor = inputPixel;
+    //fragColor = texture2D(secondTexture, vec2(u,v));
     float opacity = inputPixel.w;
     //if (opacity == 1.0) {
     //    fragColor = vec4(red, 1.0);

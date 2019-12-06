@@ -44,10 +44,10 @@ void SimpleRendererNode::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
     }
 
     auto start = std::chrono::system_clock::now();
-    // TODO add a second texture
-    //renderer_->AddTexture("secondImage", secondImage_, 0);
+//     TODO add a second texture
+//    renderer_->AddTexture("secondImage", secondImage_, 1);
     const auto& image = cv_ptr->image;
-    renderer_->render(output_, image);
+    renderer_->render(output_, image, secondImage_);
 
     ROS_DEBUG_STREAM(
         std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count() << "ns";
