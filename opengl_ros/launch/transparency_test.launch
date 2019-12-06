@@ -41,17 +41,17 @@
     <remap from="image_out" to="/second_image_in"/>
   </node>
 
-  <!--node pkg="opengl_ros" type="blend_images"
+  <node pkg="opengl_ros" type="blend_images"
     name="blended_image" output="screen">
     <param name="width"           value="$(arg width)"/>
     <param name="height"          value="$(arg height)"/>
     <param name="vertex_shader"   value="$(find opengl_ros_lib)/shader/vs_passthrough.glsl"/>
     <param name="fragment_shader" value="$(find opengl_ros)/shader/blend_images.glsl"/>
 
-    <remap from="/first_image" to="/image_in"/>
+    remap from="/first_image" to="/image_in"/>
     <remap from="/second_image" to="/second_image_in"/>
     <remap from="image_out" to="/blended_image"/>
-  </node-->
+  </node>
 
   <!--node pkg="opengl_ros" type="check_transparency"
     name="check_transparency" output="screen">

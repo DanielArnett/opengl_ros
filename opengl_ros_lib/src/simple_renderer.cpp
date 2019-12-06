@@ -148,6 +148,8 @@ SimpleRenderer::Impl::Impl(
 
 void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src, const cv::Mat& secondSrc)
 {
+    cv::Mat left = src.clone();
+    cv::Mat right = secondSrc.clone();
     if (width_ != dest.cols || height_ != dest.rows || CV_8UC4 != dest.type())
     {
         ROS_ERROR_STREAM(
@@ -171,14 +173,17 @@ void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src, const cv::M
     }
 
     //Perform rendering
-    textureIn_.write(GL_BGRA, GL_UNSIGNED_BYTE, src.data);
+//    glActiveTexture(GL_TEXTURE0);
+    textureIn_.write(GL_BGRA, GL_UNSIGNED_BYTE, left.data);
     textureIn_.bindToUnit(0);
     sampler_.bindToUnit(0);
 
-    secondTexture_.write(GL_BGRA, GL_UNSIGNED_BYTE, secondSrc.data);
+//    glActiveTexture(GL_TEXTURE1);
+    secondTexture_.write(GL_BGRA, GL_UNSIGNED_BYTE, right.data);
     secondTexture_.bindToUnit(1);
     sampler_.bindToUnit(1);
 
+//    glActiveTexture(GL_TEXTURE0);
     fbo_.bind();
     glViewport(0, 0, width_, height_);
 
@@ -255,4 +260,9 @@ void SimpleRenderer::AddTexture(const std::string& name, const cv::Mat& src, int
 void SimpleRenderer::render(cv::Mat& dest, const cv::Mat& src, const cv::Mat& secondSrc)
 {
     impl_->render(dest, src, secondSrc);
+}
+
+void SimpleRenderer::render(cv::Mat& dest, const cv::Mat& src)
+{
+    impl_->render(dest, src, src);
 }

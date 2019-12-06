@@ -8,6 +8,7 @@
 #include <image_transport/image_transport.h>
 
 #include "simple_renderer.h"
+#include <condition_variable>
 
 namespace opengl_ros {
 
@@ -27,6 +28,7 @@ class SimpleRendererNode
     std::unique_ptr<cgs::SimpleRenderer> renderer_;
     cv::Mat output_;
     cv::Mat secondImage_;
+    std::mutex imageMutex_;
 
     void imageCallback(const sensor_msgs::Image::ConstPtr& msg);
     void imageSecondCallback(const sensor_msgs::Image::ConstPtr& msg);

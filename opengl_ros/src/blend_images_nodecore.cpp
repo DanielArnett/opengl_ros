@@ -47,12 +47,13 @@ void SimpleRendererNode::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 //     TODO add a second texture
 //    renderer_->AddTexture("secondImage", secondImage_, 1);
     const auto& image = cv_ptr->image;
+    imageMutex_.lock();
     renderer_->render(output_, image, secondImage_);
+    imageMutex_.unlock();
 
     ROS_DEBUG_STREAM(
         std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count() << "ns";
     );
-    cv::imwrite("/home/NEA.com/daniel.arnett/Pictures/image_1.png", image);
     //Publish
     cv_bridge::CvImage outImage;
     outImage.header = cv_ptr->header;
@@ -63,6 +64,7 @@ void SimpleRendererNode::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 
 void SimpleRendererNode::imageSecondCallback(const sensor_msgs::Image::ConstPtr& msg)
 {
+    imageMutex_.lock();
     cv_bridge::CvImageConstPtr cv_ptr;
     try
     {
@@ -73,9 +75,8 @@ void SimpleRendererNode::imageSecondCallback(const sensor_msgs::Image::ConstPtr&
         ROS_ERROR_STREAM("cv_bridge exception: " << e.what());
         return;
     }
-
     secondImage_ = cv_ptr->image;
-    cv::imwrite("/home/NEA.com/daniel.arnett/Pictures/image_2.png", secondImage_);
+    imageMutex_.unlock();
 }
 void SimpleRendererNode::run()
 {
