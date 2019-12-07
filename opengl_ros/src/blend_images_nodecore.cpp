@@ -8,9 +8,13 @@ using namespace opengl_ros;
 SimpleRendererNode::SimpleRendererNode(const ros::NodeHandle& nh, const ros::NodeHandle& nh_private)
     : nh_(nh_private), it_(nh), second_it_(nh)
 {
-    imagePublisher_  = it_.advertise("image_out", 1);
-    imageSubscriber_ = it_.subscribe("image_in" , 1, &SimpleRendererNode::imageCallback, this);
-    imageSecondSubscriber_ = second_it_.subscribe("second_image_in" , 1, &SimpleRendererNode::imageSecondCallback, this);
+    std::string first_image, second_image, image_out;
+    nh_.param<std::string>("first_image", first_image, "first_image");
+    nh_.param<std::string>("second_image", second_image, "second_image");
+    nh_.param<std::string>("image_out", image_out, "image_out");
+    imagePublisher_  = it_.advertise(image_out, 1);
+    imageSubscriber_ = it_.subscribe(first_image, 1, &SimpleRendererNode::imageCallback, this);
+    imageSecondSubscriber_ = second_it_.subscribe(second_image, 1, &SimpleRendererNode::imageSecondCallback, this);
     
     int width, height;
     nh_.param<int>("width" , width , 640);

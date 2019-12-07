@@ -48,9 +48,9 @@
     <param name="vertex_shader"   value="$(find opengl_ros_lib)/shader/vs_passthrough.glsl"/>
     <param name="fragment_shader" value="$(find opengl_ros)/shader/blend_images.glsl"/>
 
-    remap from="/first_image" to="/image_in"/>
-    <remap from="/second_image" to="/second_image_in"/>
-    <remap from="image_out" to="/blended_image"/>
+    <param name="first_image"     value="/image_in"/>
+    <param name="second_image"    value="/second_image_in"/>
+    <param name="image_out"       value="/blended_image"/>
   </node>
 
   <!--node pkg="opengl_ros" type="check_transparency"
