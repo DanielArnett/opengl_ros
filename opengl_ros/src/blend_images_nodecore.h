@@ -8,7 +8,7 @@
 #include <image_transport/image_transport.h>
 
 #include "simple_renderer.h"
-#include <condition_variable>
+#include <cv_bridge/cv_bridge.h>
 
 namespace opengl_ros {
 
@@ -27,10 +27,10 @@ class SimpleRendererNode
     //Other members
     std::unique_ptr<cgs::SimpleRenderer> renderer_;
     cv::Mat output_;
-    cv::Mat secondImage_;
-    std::mutex imageMutex_;
-    bool imageReceived_ = false;
-    bool secondImageReceived_ = false;
+    cv_bridge::CvImagePtr first_cv_ptr;
+    cv_bridge::CvImagePtr second_cv_ptr;
+    bool secondImageInit_ = false;
+
 
     void imageCallback(const sensor_msgs::Image::ConstPtr& msg);
     void imageSecondCallback(const sensor_msgs::Image::ConstPtr& msg);

@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <opencv2/opencv.hpp>
-#include <cv_bridge/cv_bridge.h>
 
 using namespace opengl_ros;
 
@@ -27,14 +26,14 @@ SimpleRendererNode::SimpleRendererNode(const ros::NodeHandle& nh, const ros::Nod
     );
 
     output_.create(height, width, CV_8UC4);
-    secondImage_.create(height, width, CV_8UC4);
 }
-
+void p(std::string str) {
+    ROS_ERROR_STREAM(str);
+}
 void SimpleRendererNode::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 {
-    cv_bridge::CvImageConstPtr cv_ptr;
     try {
-        cv_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGRA8);
+        first_cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGRA8);
     }
     catch (cv_bridge::Exception &e) {
         ROS_ERROR_STREAM("cv_bridge exception: " << e.what());
@@ -42,47 +41,39 @@ void SimpleRendererNode::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
     }
 
     auto start = std::chrono::system_clock::now();
-    //     TODO add a second texture
-    //    renderer_->AddTexture("secondImage", secondImage_, 1);
-    const auto &image = cv_ptr->image;
-    cv::Mat secondImage = secondImage_.clone();
-    if (secondImageReceived_) {
-        // imageMutex_.lock();
-        renderer_->render(output_, image, secondImage);
-        // imageMutex_.unlock();
+    if (secondImageInit_)
+    {
+        const auto &first_image = first_cv_ptr->image;
+        const auto &second_image = second_cv_ptr->image;
+        renderer_->render(output_, first_image, second_image);
+        cv::imwrite("/home/big/Pictures/image1.png", first_image);
+        cv::imwrite("/home/big/Pictures/image2.png", second_image);
     }
-
     ROS_DEBUG_STREAM(
             std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count()
                     << "ns";
     );
     //Publish
     cv_bridge::CvImage outImage;
-    outImage.header = cv_ptr->header;
-    outImage.encoding = cv_ptr->encoding;
+    outImage.header = first_cv_ptr->header;
+    outImage.encoding = first_cv_ptr->encoding;
     outImage.image = output_;
     imagePublisher_.publish(outImage.toImageMsg());
-    imageReceived_ = true;
 }
 
 void SimpleRendererNode::imageSecondCallback(const sensor_msgs::Image::ConstPtr& msg)
 {
-    if (imageReceived_) {
-        // imageMutex_.lock();
-        cv_bridge::CvImageConstPtr cv_ptr;
-        try
-        {
-            cv_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGRA8);
-        }
-        catch (cv_bridge::Exception& e)
-        {
-            ROS_ERROR_STREAM("cv_bridge exception: " << e.what());
-            return;
-        }
-        secondImage_ = cv_ptr->image;
-        secondImageReceived_ = true;
-        // imageMutex_.unlock();
+    
+    try
+    {
+        second_cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGRA8);
     }
+    catch (cv_bridge::Exception& e)
+    {
+        ROS_ERROR_STREAM("cv_bridge exception: " << e.what());
+        return;
+    }
+    secondImageInit_ = true;
 }
 void SimpleRendererNode::run()
 {
