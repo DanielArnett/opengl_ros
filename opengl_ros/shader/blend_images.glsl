@@ -13,4 +13,5 @@ void main(void)
     vec4 t0 = texture2D(texture, vec2(u,v));
     vec4 t1 = texture2D(secondTexture, vec2(u,v));
     fragColor = (1.0 - t1.a) * t0 + t1.a * t1;
+    fragColor.rgb = sqrt(fragColor.rgb);
 }

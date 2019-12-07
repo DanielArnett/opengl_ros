@@ -49,8 +49,6 @@ void SimpleRendererNode::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
         const auto &first_image = first_cv_ptr->image;
         const auto &second_image = second_cv_ptr->image;
         renderer_->render(output_, first_image, second_image);
-        cv::imwrite("/home/big/Pictures/image1.png", first_image);
-        cv::imwrite("/home/big/Pictures/image2.png", second_image);
     }
     ROS_DEBUG_STREAM(
             std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count()
