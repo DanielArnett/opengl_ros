@@ -51,7 +51,6 @@ SimpleRendererNode::SimpleRendererNode(const ros::NodeHandle& nh, const ros::Nod
     
         //auto start = std::chrono::system_clock::now();
     
-        cv::imwrite("/home/NEA.com/daniel.arnett/Pictures/input.png", image);
         //ROS_ERROR_STREAM(image.at<Vec3b>(0, 0)[0]);
         renderer_->render(output_, image);
     

@@ -19,7 +19,6 @@ SimpleRendererNode::SimpleRendererNode(const ros::NodeHandle& nh, const ros::Nod
     int width, height;
     nh_.param<int>("width" , width , 640);
     nh_.param<int>("height", height, 480);
-
     std::string vertexShader, fragmentShader;
     nh_.param<std::string>("vertex_shader"  , vertexShader  , "");
     nh_.param<std::string>("fragment_shader", fragmentShader, "");

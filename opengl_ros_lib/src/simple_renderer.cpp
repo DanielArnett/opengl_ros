@@ -190,8 +190,6 @@ void SimpleRenderer::Impl::render(cv::Mat& dest, const cv::Mat& src, const cv::M
 {
     cv::Mat localSrc = src.clone();
     cv::Mat localSecond = secondSrc.clone();
-    cv::imwrite("/home/big/Pictures/image1.png", localSrc);
-    cv::imwrite("/home/big/Pictures/image1.png", localSecond);
     checkFormat(secondSrc);
     secondTexture_.write(glFormat_, GL_UNSIGNED_BYTE, secondSrc.data);
     secondTexture_.bindToUnit(1);
